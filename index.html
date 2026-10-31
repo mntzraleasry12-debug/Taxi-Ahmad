@@ -4,355 +4,382 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#102d55">
 <title>تكسي العراق</title>
 
 <link rel="stylesheet"
 href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 
 <style>
-* {
-  box-sizing: border-box;
-  font-family: Arial;
-}
-
-body {
-  margin: 0;
-  background: #f1f4f9;
-  color: #17243a;
-}
-
-header {
-  background: #102b55;
-  color: white;
-  padding: 22px;
-  text-align: center;
-  border-radius: 0 0 25px 25px;
-}
-
-header h2 {
-  margin: 0;
-}
-
-header p {
-  color: #e6c36b;
-}
-
-.container {
-  padding: 15px;
-  max-width: 600px;
-  margin: auto;
-}
-
-.card {
-  background: white;
-  padding: 18px;
-  border-radius: 17px;
-  margin-bottom: 15px;
-  box-shadow: 0 3px 12px #00000010;
-}
-
-label {
-  display: block;
-  margin: 12px 0 7px;
-  font-weight: bold;
-}
-
-input, select {
-  width: 100%;
-  padding: 13px;
-  border: 1px solid #ddd;
-  border-radius: 10px;
-  font-size: 15px;
-}
-
-button {
-  width: 100%;
-  padding: 14px;
-  border: none;
-  border-radius: 12px;
-  background: #102b55;
-  color: white;
-  font-size: 17px;
-  margin-top: 12px;
-  cursor: pointer;
-}
-
-button.gold {
-  background: #c49a39;
-}
-
-button:active {
-  opacity: .8;
-}
-
-#map {
-  height: 280px;
-  border-radius: 15px;
-  margin-top: 12px;
-}
-
-.price {
-  font-size: 25px;
-  color: #b58b2d;
-  font-weight: bold;
-  text-align: center;
-  margin: 15px;
-}
-
-.nav {
-  display: flex;
-  justify-content: space-around;
-  background: white;
-  padding: 14px 5px;
-  position: sticky;
-  bottom: 0;
-}
-
-.nav button {
-  width: auto;
-  margin: 0;
-  background: transparent;
-  color: #102b55;
-  font-size: 13px;
-  padding: 8px;
-}
-
-.hidden {
-  display: none;
-}
-
-.order {
-  border-bottom: 1px solid #eee;
-  padding: 12px 0;
-}
+*{box-sizing:border-box;font-family:Arial,sans-serif}
+body{margin:0;background:#f4f6f9;color:#142b49}
+header{height:60px;background:#102d55;color:white;
+display:flex;align-items:center;justify-content:center;
+font-size:22px;font-weight:bold}
+header span{color:#e6bd60;margin-left:9px}
+#map{height:calc(100vh - 60px);width:100%}
+.panel{position:fixed;bottom:0;right:0;width:100%;
+background:white;border-radius:24px 24px 0 0;
+padding:20px 17px 25px;z-index:500;
+box-shadow:0 -4px 20px #0002}
+.handle{width:45px;height:5px;background:#ddd;
+border-radius:10px;margin:-8px auto 17px}
+h3{margin:0 0 8px;font-size:21px}
+.small{font-size:14px;color:#777;margin-bottom:15px}
+.destination{width:100%;padding:17px;border:1px solid #ddd;
+border-radius:13px;background:#f5f7fa;text-align:right;
+font-size:16px;color:#18314f}
+button{cursor:pointer}
+.main-btn{width:100%;padding:17px;background:#102d55;
+color:white;border:0;border-radius:13px;font-size:18px;
+font-weight:bold;margin-top:15px}
+.main-btn:disabled{background:#aab3bf}
+.secondary{width:100%;padding:14px;border:0;
+border-radius:12px;background:#edf0f5;color:#102d55;
+font-size:16px;margin-top:10px}
+.location-btn{position:absolute;top:75px;left:15px;
+width:50px;height:50px;border:0;border-radius:13px;
+background:white;font-size:24px;z-index:450}
+.details{display:flex;justify-content:space-between;
+margin-top:15px;font-size:15px}
+.price{color:#bd9135;font-weight:bold;font-size:20px}
+#confirmPanel,#successPanel{display:none}
+#status{text-align:center;font-size:13px;
+color:#777;margin-top:12px}
+.success{text-align:center;color:#236c43;
+background:#e9f7ed;padding:15px;border-radius:12px}
 </style>
 </head>
 
 <body>
 
-<header>
-  <h2>🚕 تكسي العراق</h2>
-  <p>مشوارك بأمان وراحة</p>
-</header>
-
-<div class="container">
-
-<section id="home">
-
-<div class="card">
-<h3>أهلاً بك 👋</h3>
-<p>إلى أين تريد الذهاب اليوم؟</p>
-
-<label>موقع الانطلاق</label>
-<input id="from" placeholder="حدد موقع الانطلاق">
-
-<label>الوجهة</label>
-<input id="to" placeholder="أين تريد الذهاب؟">
-
-<label>نوع السيارة</label>
-<select id="car">
-<option value="1000">اقتصادية</option>
-<option value="1500">مريحة</option>
-<option value="2000">عائلية</option>
-</select>
+<header><span>🚕</span> تكسي العراق</header>
 
 <div id="map"></div>
 
-<button class="gold" onclick="myLocation()">
-📍 تحديد موقعي الحالي
+<button class="location-btn" onclick="getLocation()">📍</button>
+
+<div class="panel" id="mainPanel">
+<div class="handle"></div>
+
+<h3>وين تريد تروح؟</h3>
+<div class="small">حدد وجهتك واحنا نوصلّك بأمان</div>
+
+<button class="destination" onclick="selectDestination()">
+📍 <span id="destinationText">اضغط هنا لتحديد وجهتك</span>
 </button>
 
-<button onclick="calculate()">
-احسب الأجرة
+<div class="details">
+<span>🚗 المسافة</span>
+<b id="distance">-- كم</b>
+</div>
+
+<div class="details">
+<span>💰 الأجرة التقديرية</span>
+<span class="price" id="price">-- دينار</span>
+</div>
+
+<button class="main-btn" id="orderButton"
+onclick="openConfirmation()" disabled>
+🚕 اطلب تكسي
 </button>
 
-<div class="price" id="price">
-0 دينار
+<div id="status">حدد موقعك ووجهتك للبدء</div>
 </div>
 
-<button onclick="orderTaxi()">
-🚕 اطلب تكسي الآن
+<div class="panel" id="confirmPanel">
+<div class="handle"></div>
+<h3>تأكيد الرحلة</h3>
+
+<div class="details">
+<span>موقع الانطلاق</span>
+<b>موقعي الحالي</b>
+</div>
+
+<div class="details">
+<span>الوجهة</span>
+<b id="finalDestination">--</b>
+</div>
+
+<div class="details">
+<span>المسافة</span>
+<b id="finalDistance">--</b>
+</div>
+
+<div class="details">
+<span>الأجرة</span>
+<span class="price" id="finalPrice">--</span>
+</div>
+
+<button class="main-btn" onclick="sendOrder()">
+تأكيد طلب التكسي
 </button>
 
-</div>
-</section>
-
-<section id="orders" class="hidden">
-<div class="card">
-<h3>📋 طلباتي</h3>
-<div id="orderList">لا توجد طلبات حالياً</div>
-</div>
-</section>
-
-<section id="driver" class="hidden">
-<div class="card">
-<h3>🚖 وضع السائق</h3>
-<p>يمكنك تغيير حالة السائق:</p>
-<select id="driverStatus">
-<option>غير متاح</option>
-<option>متاح للعمل</option>
-</select>
-<button onclick="changeDriver()">
-حفظ الحالة
+<button class="secondary" onclick="backHome()">
+رجوع
 </button>
-<p id="driverMessage"></p>
-</div>
-</section>
-
 </div>
 
-<div class="nav">
-<button onclick="showPage('home')">🏠 الرئيسية</button>
-<button onclick="showPage('orders')">📋 طلباتي</button>
-<button onclick="showPage('driver')">🚕 السائق</button>
+<div class="panel" id="successPanel">
+<div class="handle"></div>
+<div class="success">
+<h2>✅ تم تسجيل الطلب</h2>
+<p>تم حفظ طلبك على هذا الجهاز.</p>
+<p>هذه نسخة تجريبية ولا يوجد سائق متصل حالياً.</p>
+</div>
+<button class="main-btn" onclick="newTrip()">
+طلب رحلة جديدة
+</button>
 </div>
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
 <script>
 
-let map = L.map('map').setView([31.057, 46.257], 13);
+// إعداد الخريطة
+const map = L.map('map').setView([31.057,46.257],14);
 
 L.tileLayer(
 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
 {
-  attribution: '© OpenStreetMap'
+maxZoom:19,
+attribution:'© OpenStreetMap'
+}).addTo(map);
+
+// متغيرات التطبيق
+let currentLocation = null;
+let destination = null;
+let userMarker = null;
+let destinationMarker = null;
+let route = null;
+let distanceKm = 0;
+let fare = 0;
+let selecting = false;
+
+const BASE_PRICE = 1500;
+const KM_PRICE = 500;
+
+// تحديد موقع المستخدم
+function getLocation(){
+
+if(!navigator.geolocation){
+alert('جهازك لا يدعم تحديد الموقع');
+return;
 }
+
+document.getElementById('status').innerText =
+'جارٍ تحديد موقعك...';
+
+navigator.geolocation.getCurrentPosition(
+
+function(position){
+
+currentLocation=[
+position.coords.latitude,
+position.coords.longitude
+];
+
+map.setView(currentLocation,16);
+
+if(userMarker) map.removeLayer(userMarker);
+
+userMarker=L.marker(currentLocation)
+.addTo(map)
+.bindPopup('موقع الانطلاق');
+
+document.getElementById('status').innerText =
+'تم تحديد موقعك بنجاح';
+
+if(destination) calculateFare();
+
+},
+
+function(){
+alert('تعذر تحديد موقعك. فعّل GPS واسمح للمتصفح بالوصول إليه.');
+},
+
+{enableHighAccuracy:true,timeout:15000}
+);
+}
+
+// اختيار الوجهة
+function selectDestination(){
+
+selecting=true;
+
+document.getElementById('destinationText').innerText =
+'اضغط على موقع الوصول في الخريطة';
+
+document.getElementById('status').innerText =
+'اضغط على الخريطة لاختيار الوجهة';
+
+}
+
+// عند الضغط على الخريطة
+map.on('click',function(event){
+
+if(!selecting)return;
+
+destination=[
+event.latlng.lat,
+event.latlng.lng
+];
+
+selecting=false;
+
+if(destinationMarker)map.removeLayer(destinationMarker);
+
+destinationMarker=L.marker(destination)
+.addTo(map)
+.bindPopup('وجهتك');
+
+document.getElementById('destinationText').innerText =
+'تم تحديد الوجهة بنجاح';
+
+if(!currentLocation){
+document.getElementById('status').innerText =
+'حدد موقع الانطلاق أولاً';
+return;
+}
+
+calculateFare();
+
+});
+
+// حساب المسافة بخط مستقيم
+function calculateDistance(a,b){
+
+const R=6371;
+const rad=x=>x*Math.PI/180;
+
+const dLat=rad(b[0]-a[0]);
+const dLon=rad(b[1]-a[1]);
+
+const x=
+Math.sin(dLat/2)**2+
+Math.cos(rad(a[0]))*
+Math.cos(rad(b[0]))*
+Math.sin(dLon/2)**2;
+
+return R*2*Math.atan2(Math.sqrt(x),Math.sqrt(1-x));
+}
+
+// حساب الأجرة
+function calculateFare(){
+
+distanceKm=calculateDistance(currentLocation,destination);
+
+fare=BASE_PRICE+(distanceKm*KM_PRICE);
+
+document.getElementById('distance').innerText =
+distanceKm.toFixed(1)+' كم';
+
+document.getElementById('price').innerText =
+Math.round(fare).toLocaleString('en-US')+' دينار';
+
+document.getElementById('orderButton').disabled=false;
+
+document.getElementById('status').innerText =
+'تم حساب الأجرة التقديرية';
+
+if(route)map.removeLayer(route);
+
+route=L.polyline(
+[currentLocation,destination],
+{color:'#d2a63f',weight:5,dashArray:'8,8'}
 ).addTo(map);
 
-let marker;
-let distance = 5;
-let fare = 0;
-let orders = [];
-
-function myLocation() {
-
-  if (!navigator.geolocation) {
-    alert("جهازك لا يدعم تحديد الموقع");
-    return;
-  }
-
-  navigator.geolocation.getCurrentPosition(
-    function(position) {
-
-      let lat = position.coords.latitude;
-      let lng = position.coords.longitude;
-
-      map.setView([lat, lng], 16);
-
-      if (marker) map.removeLayer(marker);
-
-      marker = L.marker([lat, lng])
-        .addTo(map)
-        .bindPopup("موقعك الحالي")
-        .openPopup();
-
-      document.getElementById('from').value =
-      lat.toFixed(5) + "," + lng.toFixed(5);
-
-    },
-    function() {
-      alert("تعذر تحديد موقعك. تأكد من تفعيل GPS");
-    }
-  );
-}
-
-function calculate() {
-
-  let carPrice =
-  Number(document.getElementById('car').value);
-
-  fare = 1500 + (distance * carPrice);
-
-  document.getElementById('price').innerText =
-  Math.round(fare).toLocaleString('en-US') + " دينار";
-}
-
-function orderTaxi() {
-
-  let from = document.getElementById('from').value;
-  let to = document.getElementById('to').value;
-
-  if (!from || !to) {
-    alert("يرجى إدخال الانطلاق والوجهة");
-    return;
-  }
-
-  if (fare <= 0) {
-    alert("احسب الأجرة أولاً");
-    return;
-  }
-
-  let order = {
-    from: from,
-    to: to,
-    fare: Math.round(fare),
-    status: "بانتظار السائق",
-    date: new Date().toLocaleString('ar-IQ')
-  };
-
-  orders.push(order);
-
-  renderOrders();
-
-  alert("تم تسجيل الطلب على هذا الجهاز، لكن لم يتم إرساله إلى سائق.");
+map.fitBounds(route.getBounds(),{padding:[50,50]});
 
 }
 
-function renderOrders() {
+// تأكيد الطلب
+function openConfirmation(){
 
-  let list = document.getElementById('orderList');
+if(!currentLocation||!destination){
+alert('حدد موقع الانطلاق والوجهة');
+return;
+}
 
-  list.innerHTML = "";
+document.getElementById('finalDestination').innerText =
+destination.map(x=>x.toFixed(4)).join(', ');
 
-  orders.forEach(function(order, index) {
+document.getElementById('finalDistance').innerText =
+distanceKm.toFixed(1)+' كم';
 
-    let div = document.createElement('div');
-    div.className = 'order';
+document.getElementById('finalPrice').innerText =
+Math.round(fare).toLocaleString('en-US')+' دينار';
 
-    let title = document.createElement('b');
-    title.textContent = "طلب رقم " + (index + 1);
-
-    let details = document.createElement('p');
-    details.textContent =
-      "من: " + order.from +
-      " | إلى: " + order.to +
-      " | الأجرة: " + order.fare + " دينار";
-
-    let status = document.createElement('p');
-    status.textContent = order.status;
-
-    div.append(title, details, status);
-    list.appendChild(div);
-
-  });
+showPanel('confirmPanel');
 
 }
 
-function showPage(page) {
+// حفظ الطلب محلياً
+function sendOrder(){
 
-  ['home', 'orders', 'driver'].forEach(function(id) {
-    document.getElementById(id).classList.add('hidden');
-  });
+const order={
+from:currentLocation,
+to:destination,
+distance:distanceKm.toFixed(2),
+price:Math.round(fare),
+date:new Date().toISOString(),
+status:'بانتظار السائق'
+};
 
-  document.getElementById(page).classList.remove('hidden');
+let orders=JSON.parse(localStorage.getItem('taxiOrders')||'[]');
 
-  if (page === 'home') {
-    setTimeout(() => map.invalidateSize(), 100);
-  }
+orders.push(order);
+
+localStorage.setItem('taxiOrders',JSON.stringify(orders));
+
+showPanel('successPanel');
+
 }
 
-function changeDriver() {
+// الرجوع
+function backHome(){
+showPanel('mainPanel');
+setTimeout(()=>map.invalidateSize(),200);
+}
 
-  let status =
-  document.getElementById('driverStatus').value;
+// رحلة جديدة
+function newTrip(){
 
-  document.getElementById('driverMessage').innerText =
-  "حالة السائق: " + status;
+destination=null;
+distanceKm=0;
+fare=0;
+
+if(destinationMarker)map.removeLayer(destinationMarker);
+if(route)map.removeLayer(route);
+
+destinationMarker=null;
+route=null;
+
+document.getElementById('destinationText').innerText =
+'اضغط هنا لتحديد وجهتك';
+
+document.getElementById('distance').innerText='-- كم';
+document.getElementById('price').innerText='-- دينار';
+document.getElementById('orderButton').disabled=true;
+
+showPanel('mainPanel');
+setTimeout(()=>map.invalidateSize(),200);
+
+}
+
+// تبديل الشاشات
+function showPanel(id){
+
+['mainPanel','confirmPanel','successPanel'].forEach(panel=>{
+document.getElementById(panel).style.display='none';
+});
+
+document.getElementById(id).style.display='block';
+
+setTimeout(()=>map.invalidateSize(),200);
 
 }
 
 </script>
-
 </body>
 </html>
